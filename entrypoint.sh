@@ -37,6 +37,11 @@ is_host_reachable() {
     ping -c 1 -W 1 "$1" > /dev/null 2>&1
 }
 
+# Function to check if a database exists on a host
+database_exists() {
+    mysql -h "$1" -P "$2" -u "$3" -p"$4" -e "USE $5;" > /dev/null 2>&1
+}
+
 start_time=$(date +%s)  # Waktu awal sinkronisasi
 
 echo -e "Thank you for using docker-mysql-sync-replication by @rickicode"
@@ -62,7 +67,16 @@ while true; do
       sleep 1
   done
 
+
   echo -e "Clearing destination database. ${DEST_NAME}"
+  # Check if the destination database exists
+  if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "$DEST_NAME"; then
+    echo -e "Destination database ${DEST_NAME} exists."
+  else
+    echo -e "Creating destination database ${DEST_NAME}."
+    mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE $DEST_NAME;"
+  fi
+
   mysqldump \
     --user="${DEST_USER}" \
     --password="${DEST_PASS}" \
@@ -78,6 +92,7 @@ while true; do
     --port="${DEST_PORT}" \
     "${DEST_NAME}"
 
+
   echo -e "Loading export into destination database. ${DEST_NAME}"
   mysql \
     --user="${DEST_USER}" \
@@ -90,6 +105,7 @@ while true; do
   end_time=$(date +%s)  # Waktu saat ini
   elapsed_time=$((end_time - start_time))  # Waktu yang telah berlalu dalam detik
   echo -e "Sync completed. Elapsed Time: ${elapsed_time} seconds"
+
 
   minutes=$((BACKUP_TIMES / 60))
   echo -e "Waiting for ${minutes} minutes..."

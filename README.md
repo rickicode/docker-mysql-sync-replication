@@ -4,6 +4,8 @@ A Docker utility that wraps MySQL command line tools to perform a one-way sync f
 
 Since the source database may be in another Docker container that is still in the process of coming up, this utility automatically waits on the source database to become accessible before continuing.
 
+
+
 ## Usage
 
 There are several ways to run `ghcr.io/rickicode/docker-mysql-sync-replication:latest`.
@@ -31,7 +33,7 @@ docker run -d \
 Docker Compose:
 
 ```
-version: '2'
+version: '3'
 
 services:
   mysql-sync:
@@ -67,5 +69,7 @@ The important bits are the environment variables, **all of which are required**.
 | DEST_PASS | Destination db password |   
 | DEST_USER | Destination db username |
 
+
+DB NAME will be created if not exist.
 The cointainer will run in the background and will automatically restart if the container is stopped or the Docker daemon is restarted.
 
