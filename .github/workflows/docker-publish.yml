@@ -16,7 +16,7 @@ on:
   # This creates an environment variable called `IMAGE_NAME ` with the value `ghtoken_product_demo`.
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: docker-mysql-sync-replication
 #
 jobs:
   # This pushes the image to GitHub Packages.
