@@ -39,6 +39,8 @@ is_host_reachable() {
 
 start_time=$(date +%s)  # Waktu awal sinkronisasi
 
+echo -e "Thank you for using docker-mysql-sync-replication by @rickicode"
+
 while true; do
   echo -e "Starting sync..."
   while ! is_host_reachable "$SRC_HOST"; do
