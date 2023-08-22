@@ -1,9 +1,0 @@
-FROM alpine:latest
-RUN apk add --no-cache mysql-client
-
-RUN mkdir /sql
-
-COPY entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
