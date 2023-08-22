@@ -50,7 +50,7 @@ while true; do
   echo -e "Starting sync..."
   while ! is_host_reachable "$SRC_HOST"; do
       echo -e "Source host ${SRC_HOST} not reachable, trying again later..."
-      sleep 1
+      sleep 15
   done
 
   echo -e "Exporting source database. ${SRC_NAME}"
@@ -64,7 +64,7 @@ while true; do
 
   while ! is_host_reachable "$DEST_HOST"; do
       echo -e "Destination host ${DEST_HOST} not reachable, trying again later..."
-      sleep 1
+      sleep 15
   done
 
 
