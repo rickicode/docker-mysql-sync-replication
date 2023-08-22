@@ -6,7 +6,7 @@ Since the source database may be in another Docker container that is still in th
 
 ## Usage
 
-There are several ways to run `database-replikasi:latest`.
+There are several ways to run `ghcr.io/rickicode/docker-mysql-sync-replication:latest`.
 
 Stand-alone:
 
@@ -15,15 +15,17 @@ docker run -d \
   --name mysql-replikasi \
   --restart unless-stopped \
     -e BACKUP_TIMES=120 \
-    -e SRC_HOST=sourcehost.example.com \
+    -e SRC_HOST=sourcehost.netq.me \
+    -e SRC_PORT=3306 \
     -e SRC_NAME=source_db_name \
     -e SRC_PASS=source_db_pass \
     -e SRC_USER=source_db_user \
-    -e DEST_HOST=destinationhost.example.com \
+    -e DEST_HOST=destinationhost.netq.me \
+    -e DEST_PORT=3306 \
     -e DEST_NAME=destination_db_name \
     -e DEST_PASS=destination_db_pass \
     -e DEST_USER=destination_db_user \
-    database-replikasi:latest
+    ghcr.io/rickicode/docker-mysql-sync-replication:latest
 ```
 
 Docker Compose:
@@ -33,16 +35,18 @@ version: '2'
 
 services:
   mysql-sync:
-    image: 'database-replikasi:latest'
+    image: 'ghcr.io/rickicode/docker-mysql-sync-replication:latest'
     container_name: mysql-replikasi
     restart: unless-stopped
     environment:
       - BACKUP_TIMES=120
-      - SRC_HOST=sourcehost.example.com
+      - SRC_HOST=sourcehost.netq.me
+      - SRC_PORT=3306
       - SRC_NAME=source_db_name
       - SRC_PASS=source_db_pass
       - SRC_USER=source_db_user
-      - DEST_HOST=destinationhost.example.com
+      - DEST_HOST=destinationhost.netq.me
+      - DEST_PORT=3306
       - DEST_NAME=destination_db_name
       - DEST_PASS=destination_db_pass
       - DEST_USER=destination_db_user
