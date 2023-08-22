@@ -7,7 +7,7 @@
 </div>
 
 
-# database-replikasi:latest
+# Docker MySQL Sync Replication
 
 
 <p align="center"> A Docker utility that wraps MySQL command line tools to perform a one-way sync from one database to another.
