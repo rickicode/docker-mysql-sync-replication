@@ -94,6 +94,7 @@ while true; do
     --host="${DEST_HOST}" \
     --port="${DEST_PORT}" \
     "${DEST_NAME}" \
+    --default-character-set=utf8 \
     < /sql/dump.sql
 
   end_time=$(date +%s)  # Waktu saat ini
