@@ -51,12 +51,14 @@ while true; do
 
   echo -e "Exporting source database. ${SRC_NAME}"
   mysqldump \
-    --user="${SRC_USER}" \
-    --password="${SRC_PASS}" \
-    --host="${SRC_HOST}" \
-    --port="${SRC_PORT}" \
-    "${SRC_NAME}" \
-    > /sql/dump.sql
+  --user="${SRC_USER}" \
+  --password="${SRC_PASS}" \
+  --host="${SRC_HOST}" \
+  --port="${SRC_PORT}" \
+  --default-character-set=utf8 \
+  --skip-set-charset \
+  "${SRC_NAME}" \
+  > /sql/dump.sql
 
   while ! mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "SELECT 1;" > /dev/null 2>&1; do
       echo -e "Destination host ${DEST_HOST}:${DEST_PORT} not reachable, trying again in 5 seconds..."
