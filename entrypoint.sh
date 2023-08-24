@@ -55,7 +55,7 @@ while true; do
   --password="${SRC_PASS}" \
   --host="${SRC_HOST}" \
   --port="${SRC_PORT}" \
-  --default-character-set=utf8 \
+  --default-character-set=utf8mb4 \
   --skip-set-charset \
   --compatible=mysql40 \
   "${SRC_NAME}" \
