@@ -32,11 +32,6 @@ if [ -z "$BACKUP_TIMES" ]; then
   BACKUP_TIMES=120
 fi
 
-# Function to check if a host is reachable
-is_host_reachable() {
-    ping -c 1 -W 1 "$1" > /dev/null 2>&1
-}
-
 # Function to check if a database exists on a host
 database_exists() {
     mysql -h "$1" -P "$2" -u "$3" -p"$4" -e "USE $5;" > /dev/null 2>&1
@@ -48,9 +43,10 @@ echo -e "Thank you for using docker-mysql-sync-replication by @rickicode"
 
 while true; do
   echo -e "Starting sync..."
-  while ! is_host_reachable "$SRC_HOST"; do
-      echo -e "Source host ${SRC_HOST} not reachable, trying again later..."
-      sleep 15
+  
+  while ! mysql -h "$SRC_HOST" -P "$SRC_PORT" -u "$SRC_USER" -p"$SRC_PASS" -e "SELECT 1;" > /dev/null 2>&1; do
+      echo -e "Source host ${SRC_HOST}:${SRC_PORT} not reachable, trying again in 5 seconds..."
+      sleep 5
   done
 
   echo -e "Exporting source database. ${SRC_NAME}"
@@ -62,11 +58,10 @@ while true; do
     "${SRC_NAME}" \
     > /sql/dump.sql
 
-  while ! is_host_reachable "$DEST_HOST"; do
-      echo -e "Destination host ${DEST_HOST} not reachable, trying again later..."
-      sleep 15
+  while ! mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "SELECT 1;" > /dev/null 2>&1; do
+      echo -e "Destination host ${DEST_HOST}:${DEST_PORT} not reachable, trying again in 5 seconds..."
+      sleep 5
   done
-
 
   echo -e "Clearing destination database. ${DEST_NAME}"
   # Check if the destination database exists
@@ -92,7 +87,6 @@ while true; do
     --port="${DEST_PORT}" \
     "${DEST_NAME}"
 
-
   echo -e "Loading export into destination database. ${DEST_NAME}"
   mysql \
     --user="${DEST_USER}" \
@@ -105,7 +99,6 @@ while true; do
   end_time=$(date +%s)  # Waktu saat ini
   elapsed_time=$((end_time - start_time))  # Waktu yang telah berlalu dalam detik
   echo -e "Sync completed. Elapsed Time: ${elapsed_time} seconds"
-
 
   minutes=$((BACKUP_TIMES / 60))
   echo -e "Waiting for ${minutes} minutes..."
