@@ -55,11 +55,14 @@ while true; do
   --password="${SRC_PASS}" \
   --host="${SRC_HOST}" \
   --port="${SRC_PORT}" \
-  --default-character-set=utf8mb4 \
   --skip-set-charset \
-  --compatible=mysql40 \
   "${SRC_NAME}" \
   > /sql/dump.sql
+
+  sed -i 's/utf8mb4/utf8/g' /sql/dump.sql
+  sed -i 's/utf8_unicode_ci/utf8_general_ci/g' /sql/dump.sql
+  sed -i 's/utf8_unicode_520_ci/utf8_general_ci/g' /sql/dump.sql
+  sed -i 's/utf8_0900_ai_ci/utf8_general_ci/g' /sql/dump.sql
 
 
   while ! mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "SELECT 1;" > /dev/null 2>&1; do
@@ -100,6 +103,7 @@ while true; do
     "${DEST_NAME}" \
     --default-character-set=utf8mb4 \
     < /sql/dump.sql
+
 
   end_time=$(date +%s)  # Waktu saat ini
   elapsed_time=$((end_time - start_time))  # Waktu yang telah berlalu dalam detik
