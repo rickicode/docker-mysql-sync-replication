@@ -99,14 +99,15 @@ while true; do
       "${DEST_DB_NAME}" \
       --default-character-set=utf8mb4 \
       <"/sql/${db_name}_dump.sql"
-
+      
     echo -e "Syncing database: ${DEST_DB_NAME}"
-
+    
+    # Check if the destination database exists (it should)
     if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}"; then
       echo -e "Dropping temporary database: ${DEST_DB_NAME}_CLONE"
       mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;"
     else
-      echo -e "DONE."
+      echo -e "Destination database ${DEST_DB_NAME} not found. Something went wrong."
     fi
 
   done
