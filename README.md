@@ -28,16 +28,15 @@ docker run -d \
   --name mysql-replikasi \
   --restart unless-stopped \
     -e BACKUP_TIMES=120 \
+    -e DATABASE_NAME=databasename \
     -e SRC_HOST=sourcehost.netq.me \
     -e SRC_PORT=3306 \
-    -e SRC_NAME=source_db_name \
-    -e SRC_PASS=source_db_pass \
     -e SRC_USER=source_db_user \
+    -e SRC_PASS=source_db_pass \
     -e DEST_HOST=destinationhost.netq.me \
     -e DEST_PORT=3306 \
-    -e DEST_NAME=destination_db_name \
-    -e DEST_PASS=destination_db_pass \
     -e DEST_USER=destination_db_user \
+    -e DEST_PASS=destination_db_pass \
     ghcr.io/rickicode/docker-mysql-sync-replication:latest
 ```
 
@@ -53,30 +52,28 @@ services:
     restart: unless-stopped
     environment:
       - BACKUP_TIMES=120
+      - DATABASE_NAME=databasename
       - SRC_HOST=sourcehost.netq.me
       - SRC_PORT=3306
-      - SRC_NAME=source_db_name
-      - SRC_PASS=source_db_pass
       - SRC_USER=source_db_user
+      - SRC_PASS=source_db_pass
       - DEST_HOST=destinationhost.netq.me
       - DEST_PORT=3306
-      - DEST_NAME=destination_db_name
-      - DEST_PASS=destination_db_pass
       - DEST_USER=destination_db_user
+      - DEST_PASS=destination_db_pass
 
 ```
 ### Example
 Support Multiple Database by using comma (,)
 ```
 BACKUP_TIMES=120
+DATABASE_NAME=netqdb,wpdb
 SRC_HOST=source.netq.me
 SRC_PORT=3306
-SRC_NAME=netqdb,wpdb
 SRC_USER=root
 SRC_PASS=whymelord
 DEST_HOST=dest.netq.me
 DEST_PORT=3306
-DEST_NAME=netqdb,wpdb
 DEST_USER=root
 DEST_PASS=whymelord
 ```
@@ -87,12 +84,11 @@ The important bits are the environment variables, **all of which are required**.
 | Environment Variable | Description |
 |----------------------|-------------|
 | BACKUP_TIMES | Backup time in second |
+| DATABASE_NAME | Database Name you want Backup |
 | SRC_HOST | Source db hostname |
-| SRC_NAME | Source db name |
 | SRC_USER | Source db username |
 | SRC_PASS | Source db password |   
 | DEST_HOST | Destination db hostname |
-| DEST_NAME | Destination db name |
 | DEST_USER | Destination db username |
 | DEST_PASS | Destination db password |   
 

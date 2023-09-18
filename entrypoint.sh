@@ -6,7 +6,7 @@ set -e
 # Check required environment variables
 #
 echo -e "Checking required environment variables."
-REQUIRED=(SRC_HOST SRC_USER SRC_PASS SRC_NAME DEST_HOST DEST_USER DEST_PASS DEST_NAME)
+REQUIRED=(DATABASE_NAME SRC_HOST SRC_USER SRC_PASS DEST_HOST DEST_USER DEST_PASS)
 
 for i in "${REQUIRED[@]}"; do
   if [ -z "${!i}" ]; then
@@ -33,23 +33,32 @@ fi
 
 # Function to check if a database exists on a host
 database_exists() {
-  mysql -h "$1" -P "$2" -u "$3" -p"$4" -e "USE $5;" > /dev/null 2>&1
+  mysql -h "$1" -P "$2" -u "$3" -p"$4" -e "USE $5;" >/dev/null 2>&1
 }
 
-start_time=$(date +%s)  # Waktu awal sinkronisasi
+start_time=$(date +%s) # Waktu awal sinkronisasi
 
 echo -e "Thank you for using docker-mysql-sync-replication by @rickicode"
 
 while true; do
   echo -e "Starting sync..."
 
-  while ! mysql -h "$SRC_HOST" -P "$SRC_PORT" -u "$SRC_USER" -p"$SRC_PASS" -e "SELECT 1;" > /dev/null 2>&1; do
+  # Function to get the public IP address
+  get_public_ip() {
+    public_ip=$(curl -s https://api64.ipify.org?format=text)
+    echo "Public IP address: $public_ip"
+  }
+
+  # Check and print public IP address
+  get_public_ip
+
+  while ! mysql -h "$SRC_HOST" -P "$SRC_PORT" -u "$SRC_USER" -p"$SRC_PASS" -e "SELECT 1;" >/dev/null 2>&1; do
     echo -e "Source host ${SRC_HOST}:${SRC_PORT} not reachable, trying again in 5 seconds..."
     sleep 5
   done
 
   # Export all source databases
-  for db_name in $(echo $SRC_NAME | tr ',' ' '); do
+  for db_name in $(echo $DATABASE_NAME | tr ',' ' '); do
     echo -e "Exporting source database: ${db_name}"
     mysqldump \
       --user="${SRC_USER}" \
@@ -58,7 +67,7 @@ while true; do
       --port="${SRC_PORT}" \
       --skip-set-charset \
       "${db_name}" \
-      > "/sql/${db_name}_dump.sql"
+      >"/sql/${db_name}_dump.sql"
 
     sed -i 's/utf8mb4/utf8/g' "/sql/${db_name}_dump.sql"
     sed -i 's/utf8_unicode_ci/utf8_general_ci/g' "/sql/${db_name}_dump.sql"
@@ -66,13 +75,13 @@ while true; do
     sed -i 's/utf8_0900_ai_ci/utf8_general_ci/g' "/sql/${db_name}_dump.sql"
   done
 
-  while ! mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "SELECT 1;" > /dev/null 2>&1; do
+  while ! mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "SELECT 1;" >/dev/null 2>&1; do
     echo -e "Destination host ${DEST_HOST}:${DEST_PORT} not reachable, trying again in 5 seconds..."
     sleep 5
   done
 
   # Create or clear destination databases and load data
-  for db_name in $(echo $DEST_NAME | tr ',' ' '); do
+  for db_name in $(echo $DATABASE_NAME | tr ',' ' '); do
     echo -e "Clearing destination database: ${db_name}"
     # Check if the destination database exists
     if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${db_name}"; then
@@ -89,14 +98,14 @@ while true; do
       --host="${DEST_HOST}" \
       --port="${DEST_PORT}" \
       --add-drop-table \
-      --no-data "${db_name}" | \
-      grep -e ^DROP -e FOREIGN_KEY_CHECKS | \
+      --no-data "${db_name}" |
+      grep -e ^DROP -e FOREIGN_KEY_CHECKS |
       mysql \
-      --user="${DEST_USER}" \
-      --password="${DEST_PASS}" \
-      --host="${DEST_HOST}" \
-      --port="${DEST_PORT}" \
-      "${db_name}"
+        --user="${DEST_USER}" \
+        --password="${DEST_PASS}" \
+        --host="${DEST_HOST}" \
+        --port="${DEST_PORT}" \
+        "${db_name}"
 
     echo -e "Loading export into destination database: ${db_name}"
     mysql \
@@ -104,13 +113,13 @@ while true; do
       --password="${DEST_PASS}" \
       --host="${DEST_HOST}" \
       --port="${DEST_PORT}" \
-      "${db_name}" \
+      "REPLIKASI_${db_name}" \
       --default-character-set=utf8mb4 \
-      < "/sql/${db_name}_dump.sql"
+      <"/sql/${db_name}_dump.sql"
   done
 
-  end_time=$(date +%s)  # Waktu saat ini
-  elapsed_time=$((end_time - start_time))  # Waktu yang telah berlalu dalam detik
+  end_time=$(date +%s)                    # Waktu saat ini
+  elapsed_time=$((end_time - start_time)) # Waktu yang telah berlalu dalam detik
   echo -e "Sync completed. Elapsed Time: ${elapsed_time} seconds"
 
   minutes=$((BACKUP_TIMES / 60))
