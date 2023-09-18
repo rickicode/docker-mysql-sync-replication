@@ -45,7 +45,7 @@ while true; do
 
   # Function to get the public IP address
   get_public_ip() {
-    public_ip=$(curl -s https://ipv4.icanhazip.com)
+    public_ip=$(curl -s https://api64.ipify.org?format=text)
     echo "Public IP address: $public_ip"
   }
 
@@ -59,21 +59,6 @@ while true; do
 
   # Export all source databases
   for db_name in $(echo $DATABASE_NAME | tr ',' ' '); do
-    DEST_DB_NAME="REPLIKASI_${db_name}" # Nama database tujuan dengan awalan "REPLIKASI_"
-    # Check if the destination database exists
-    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}"; then
-      echo -e "Destination database ${DEST_DB_NAME} exists."
-      echo -e "Renaming destination database to: ${DEST_DB_NAME}_CLONE"
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;" >/dev/null 2>&1
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${DEST_DB_NAME}_CLONE;"
-      mysqldump --user="${DEST_USER}" --password="${DEST_PASS}" --host="${DEST_HOST}" --port="${DEST_PORT}" --skip-lock-tables --add-drop-database --databases "${DEST_DB_NAME}" >"/sql/${DEST_DB_NAME}_dump.sql"
-      mysql --user="${DEST_USER}" --password="${DEST_PASS}" --host="${DEST_HOST}" --port="${DEST_PORT}" <"/sql/${DEST_DB_NAME}_dump.sql"
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME};" >/dev/null 2>&1
-    else
-      echo -e "Creating destination database ${DEST_DB_NAME}."
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${DEST_DB_NAME};"
-    fi
-
     echo -e "Exporting source database: ${db_name}"
     mysqldump \
       --user="${SRC_USER}" \
@@ -88,34 +73,49 @@ while true; do
     sed -i 's/utf8_unicode_ci/utf8_general_ci/g' "/sql/${db_name}_dump.sql"
     sed -i 's/utf8_unicode_520_ci/utf8_general_ci/g' "/sql/${db_name}_dump.sql"
     sed -i 's/utf8_0900_ai_ci/utf8_general_ci/g' "/sql/${db_name}_dump.sql"
+  done
 
-    while ! mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "SELECT 1;" >/dev/null 2>&1; do
-      echo -e "Destination host ${DEST_HOST}:${DEST_PORT} not reachable, trying again in 5 seconds..."
-      sleep 5
-    done
+  while ! mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "SELECT 1;" >/dev/null 2>&1; do
+    echo -e "Destination host ${DEST_HOST}:${DEST_PORT} not reachable, trying again in 5 seconds..."
+    sleep 5
+  done
 
-    echo -e "Loading export into destination database: ${DEST_DB_NAME}"
+  # Create or clear destination databases and load data
+  for db_name in $(echo $DATABASE_NAME | tr ',' ' '); do
+    echo -e "Clearing destination database: ${db_name}"
+    # Check if the destination database exists
+    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${db_name}"; then
+      echo -e "Destination database ${db_name} exists."
+    else
+      echo -e "Creating destination database ${db_name}."
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${db_name};"
+    fi
+
+    echo -e "Clearing existing data in destination database: ${db_name}"
+    mysqldump \
+      --user="${DEST_USER}" \
+      --password="${DEST_PASS}" \
+      --host="${DEST_HOST}" \
+      --port="${DEST_PORT}" \
+      --add-drop-table \
+      --no-data "${db_name}" |
+      grep -e ^DROP -e FOREIGN_KEY_CHECKS |
+      mysql \
+        --user="${DEST_USER}" \
+        --password="${DEST_PASS}" \
+        --host="${DEST_HOST}" \
+        --port="${DEST_PORT}" \
+        "${db_name}"
+
+    echo -e "Loading export into destination database: ${db_name}"
     mysql \
       --user="${DEST_USER}" \
       --password="${DEST_PASS}" \
       --host="${DEST_HOST}" \
       --port="${DEST_PORT}" \
-      "${DEST_DB_NAME}" \
+      "REPLIKASI_${db_name}" \
       --default-character-set=utf8mb4 \
       <"/sql/${db_name}_dump.sql"
-
-    echo -e "Syncing database: ${DEST_DB_NAME}"
-
-    # Check if the destination database exists (it should)
-    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}_CLONE"; then
-      echo -e "Dropping temporary database: ${DEST_DB_NAME}_CLONE"
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;" >/dev/null 2>&1
-    else
-      echo -e "Destination database ${DEST_DB_NAME} not found. Something went wrong."
-    fi
-    rm "/sql/${db_name}_dump.sql" >/dev/null 2>&1
-    rm "/sql/${DEST_DB_NAME}_dump.sql" >/dev/null 2>&1
-
   done
 
   end_time=$(date +%s)                    # Waktu saat ini
