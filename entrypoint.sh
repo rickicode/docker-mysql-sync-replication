@@ -45,7 +45,7 @@ while true; do
 
   # Function to get the public IP address
   get_public_ip() {
-    public_ip=$(curl -s https://api64.ipify.org?format=text)
+    public_ip=$(curl -s https://ipv4.icanhazip.com)
     echo "Public IP address: $public_ip"
   }
 
