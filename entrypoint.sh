@@ -80,30 +80,8 @@ while true; do
       sleep 5
     done
 
-    echo -e "Clearing destination database: ${DEST_DB_NAME}"
-    # Check if the destination database exists
-    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}"; then
-      echo -e "Destination database ${DEST_DB_NAME} exists."
-    else
-      echo -e "Creating destination database ${DEST_DB_NAME}."
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${DEST_DB_NAME};"
-    fi
-
-    echo -e "Clearing existing data in destination database: ${DEST_DB_NAME}"
-    mysqldump \
-      --user="${DEST_USER}" \
-      --password="${DEST_PASS}" \
-      --host="${DEST_HOST}" \
-      --port="${DEST_PORT}" \
-      --add-drop-table \
-      --no-data "${DEST_DB_NAME}" |
-      grep -e ^DROP -e FOREIGN_KEY_CHECKS |
-      mysql \
-        --user="${DEST_USER}" \
-        --password="${DEST_PASS}" \
-        --host="${DEST_HOST}" \
-        --port="${DEST_PORT}" \
-        "${DEST_DB_NAME}"
+    echo -e "Renaming destination database to: ${DEST_DB_NAME}_CLONE"
+    mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "ALTER DATABASE ${DEST_DB_NAME} RENAME ${DEST_DB_NAME}_CLONE;"
 
     echo -e "Loading export into destination database: ${DEST_DB_NAME}"
     mysql \
@@ -114,6 +92,11 @@ while true; do
       "${DEST_DB_NAME}" \
       --default-character-set=utf8mb4 \
       <"/sql/${db_name}_dump.sql"
+      
+    echo -e "Syncing database: ${DEST_DB_NAME}"
+    echo -e "Dropping temporary database: ${DEST_DB_NAME}_CLONE"
+    mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;"
+
   done
 
   end_time=$(date +%s)                    # Waktu saat ini
