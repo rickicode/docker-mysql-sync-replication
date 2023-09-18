@@ -109,7 +109,7 @@ while true; do
     # Check if the destination database exists (it should)
     if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}_CLONE"; then
       echo -e "Dropping temporary database: ${DEST_DB_NAME}_CLONE"
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;"
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;" >/dev/null 2>&1
     else
       echo -e "Destination database ${DEST_DB_NAME} not found. Something went wrong."
     fi
