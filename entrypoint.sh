@@ -53,13 +53,16 @@ while true; do
   get_public_ip
 
   while ! mysql -h "$SRC_HOST" -P "$SRC_PORT" -u "$SRC_USER" -p"$SRC_PASS" -e "SELECT 1;" >/dev/null 2>&1; do
-    echo-e "Source host ${SRC_HOST}:${SRC_PORT} not reachable, trying again in 5 seconds..."
+    echo -e "Source host ${SRC_HOST}:${SRC_PORT} not reachable, trying again in 5 seconds..."
     sleep 5
   done
 
   # Export all source databases
   for db_name in $(echo $DATABASE_NAME | tr ',' ' '); do
-    DEST_DB_NAME="REPLIKASI_$db_name" # Nama database tujuan dengan awalan "REPLIKASI_"
+    DEST_DB_NAME="REPLIKASI_${db_name}" # Nama database tujuan dengan awalan "REPLIKASI_"
+    echo -e "Renaming destination database to: ${DEST_DB_NAME}_CLONE"
+    mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "ALTER DATABASE ${DEST_DB_NAME} RENAME ${DEST_DB_NAME}_CLONE;"
+
     echo -e "Exporting source database: ${db_name}"
     mysqldump \
       --user="${SRC_USER}" \
@@ -79,9 +82,6 @@ while true; do
       echo -e "Destination host ${DEST_HOST}:${DEST_PORT} not reachable, trying again in 5 seconds..."
       sleep 5
     done
-
-    echo -e "Renaming destination database to: ${DEST_DB_NAME}_CLONE"
-    mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "ALTER DATABASE ${DEST_DB_NAME} RENAME ${DEST_DB_NAME}_CLONE;"
 
     echo -e "Loading export into destination database: ${DEST_DB_NAME}"
     mysql \
