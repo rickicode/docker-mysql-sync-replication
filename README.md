@@ -21,7 +21,7 @@ Since the source database may be in another Docker container that is still in th
 
 There are several ways to run `ghcr.io/rickicode/docker-mysql-sync-replication:latest`.
 
-Stand-alone:
+### Stand-alone:
 
 ```
 docker run -d \
@@ -41,7 +41,7 @@ docker run -d \
     ghcr.io/rickicode/docker-mysql-sync-replication:latest
 ```
 
-Docker Compose:
+### Docker Compose:
 
 ```
 version: '3'
@@ -66,6 +66,7 @@ services:
 
 ```
 ### Example
+Support Multiple Database by using comma (,)
 ```
 BACKUP_TIMES=120
 SRC_HOST=source.netq.me
