@@ -61,13 +61,17 @@ while true; do
   for db_name in $(echo $DATABASE_NAME | tr ',' ' '); do
     DEST_DB_NAME="REPLIKASI_${db_name}" # Nama database tujuan dengan awalan "REPLIKASI_"
     # Check if the destination database exists
-    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}_CLONE"; then
+    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}"; then
       echo -e "Destination database ${DEST_DB_NAME} exists."
       echo -e "Renaming destination database to: ${DEST_DB_NAME}_CLONE"
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;" >/dev/null 2>&1
       mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${DEST_DB_NAME}_CLONE;"
       mysqldump --user="${DEST_USER}" --password="${DEST_PASS}" --host="${DEST_HOST}" --port="${DEST_PORT}" --skip-lock-tables --add-drop-database --databases "${DEST_DB_NAME}" >"/sql/${DEST_DB_NAME}_dump.sql"
       mysql --user="${DEST_USER}" --password="${DEST_PASS}" --host="${DEST_HOST}" --port="${DEST_PORT}" <"/sql/${DEST_DB_NAME}_dump.sql"
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME};"
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME};" >/dev/null 2>&1
+    else
+      echo -e "Creating destination database ${DEST_DB_NAME}."
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${DEST_DB_NAME};"
     fi
 
     echo -e "Exporting source database: ${db_name}"
@@ -109,8 +113,8 @@ while true; do
     else
       echo -e "Destination database ${DEST_DB_NAME} not found. Something went wrong."
     fi
-    rm "/sql/${db_name}_dump.sql"
-    rm "/sql/${DEST_DB_NAME}_dump.sql"
+    rm "/sql/${db_name}_dump.sql" >/dev/null 2>&1
+    rm "/sql/${DEST_DB_NAME}_dump.sql" >/dev/null 2>&1
 
   done
 
