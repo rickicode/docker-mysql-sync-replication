@@ -53,11 +53,11 @@ services:
     environment:
       - BACKUP_TIMES=120
       - DATABASE_NAME=databasename
-      - SRC_HOST=sourcehost.netq.me
+      - SRC_HOST=source.netq.me
       - SRC_PORT=3306
       - SRC_USER=source_db_user
       - SRC_PASS=source_db_pass
-      - DEST_HOST=destinationhost.netq.me
+      - DEST_HOST=dest.netq.me
       - DEST_PORT=3306
       - DEST_USER=destination_db_user
       - DEST_PASS=destination_db_pass
