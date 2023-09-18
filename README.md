@@ -29,11 +29,11 @@ docker run -d \
   --restart unless-stopped \
     -e BACKUP_TIMES=120 \
     -e DATABASE_NAME=databasename \
-    -e SRC_HOST=sourcehost.netq.me \
+    -e SRC_HOST=source.netq.me \
     -e SRC_PORT=3306 \
     -e SRC_USER=source_db_user \
     -e SRC_PASS=source_db_pass \
-    -e DEST_HOST=destinationhost.netq.me \
+    -e DEST_HOST=dest.netq.me \
     -e DEST_PORT=3306 \
     -e DEST_USER=destination_db_user \
     -e DEST_PASS=destination_db_pass \
