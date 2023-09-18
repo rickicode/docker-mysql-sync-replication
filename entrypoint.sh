@@ -65,21 +65,9 @@ while true; do
       echo -e "Destination database ${DEST_DB_NAME} exists."
       echo -e "Renaming destination database to: ${DEST_DB_NAME}_CLONE"
       mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${DEST_DB_NAME}_CLONE;"
-      mysqldump \
-        --user="${DEST_USER}" \
-        --password="${DEST_PASS}" \
-        --host="${DEST_HOST}" \
-        --port="${DEST_PORT}" \
-        --skip-set-charset \
-        "${DEST_DB_NAME}" |
-        mysql \
-          --user="${DEST_USER}" \
-          --password="${DEST_PASS}" \
-          --host="${DEST_HOST}" \
-          --port="${DEST_PORT}" \
-          "${DEST_DB_NAME}_CLONE"
+      mysqldump --user="${DEST_USER}" --password="${DEST_PASS}" --host="${DEST_HOST}" --port="${DEST_PORT}" --skip-lock-tables --add-drop-database --databases "${DEST_DB_NAME}" > "/sql/${DEST_DB_NAME}_dump.sql"
+      mysql --user="${DEST_USER}" --password="${DEST_PASS}" --host="${DEST_HOST}" --port="${DEST_PORT}" < "/sql/${DEST_DB_NAME}_dump.sql"
       mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME};"
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "ALTER DATABASE ${DEST_DB_NAME}_CLONE RENAME ${DEST_DB_NAME};"
     else
       echo -e "Creating destination database ${DEST_DB_NAME}."
       mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${DEST_DB_NAME};"
@@ -124,14 +112,11 @@ while true; do
     else
       echo -e "Destination database ${DEST_DB_NAME} not found. Something went wrong."
     fi
+    rm "/sql/${db_name}_dump.sql"
+    rm "/sql/${DEST_DB_NAME}_dump.sql"
 
   done
 
   end_time=$(date +%s)                    # Waktu saat ini
   elapsed_time=$((end_time - start_time)) # Waktu yang telah berlalu dalam detik
-  echo -e "Sync completed. Elapsed Time: ${elapsed_time} seconds"
-
-  minutes=$((BACKUP_TIMES / 60))
-  echo -e "Waiting for ${minutes} minutes..."
-  sleep "$BACKUP_TIMES"
-done
+  echo -e "Sync completed. Elapsed Time: ${elapsed_time}
