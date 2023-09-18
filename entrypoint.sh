@@ -107,7 +107,7 @@ while true; do
     echo -e "Syncing database: ${DEST_DB_NAME}"
 
     # Check if the destination database exists (it should)
-    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}"; then
+    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}_CLONE"; then
       echo -e "Dropping temporary database: ${DEST_DB_NAME}_CLONE"
       mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;"
     else
