@@ -22,7 +22,6 @@ Since the source database may be in another Docker container that is still in th
 There are several ways to run `ghcr.io/rickicode/docker-mysql-sync-replication:latest`.
 
 ### Stand-alone:
-
 ```
 docker run -d \
   --name mysql-replikasi \
@@ -41,7 +40,6 @@ docker run -d \
 ```
 
 ### Docker Compose:
-
 ```
 version: '3'
 

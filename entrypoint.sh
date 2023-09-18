@@ -120,3 +120,5 @@ while true; do
   end_time=$(date +%s)                    # Waktu saat ini
   elapsed_time=$((end_time - start_time)) # Waktu yang telah berlalu dalam detik
   echo -e "Sync completed. Elapsed Time: ${elapsed_time}"
+
+
