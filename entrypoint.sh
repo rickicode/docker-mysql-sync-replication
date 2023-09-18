@@ -60,8 +60,15 @@ while true; do
   # Export all source databases
   for db_name in $(echo $DATABASE_NAME | tr ',' ' '); do
     DEST_DB_NAME="REPLIKASI_${db_name}" # Nama database tujuan dengan awalan "REPLIKASI_"
-    echo -e "Renaming destination database to: ${DEST_DB_NAME}_CLONE"
-    mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "ALTER DATABASE ${DEST_DB_NAME} RENAME ${DEST_DB_NAME}_CLONE;"
+    # Check if the destination database exists
+    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}"; then
+      echo -e "Destination database ${DEST_DB_NAME} exists."
+      echo -e "Renaming destination database to: ${DEST_DB_NAME}_CLONE"
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "ALTER DATABASE ${DEST_DB_NAME} RENAME ${DEST_DB_NAME}_CLONE;"
+    else
+      echo -e "Creating destination database ${DEST_DB_NAME}."
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${DEST_DB_NAME};"
+    fi
 
     echo -e "Exporting source database: ${db_name}"
     mysqldump \
@@ -92,10 +99,15 @@ while true; do
       "${DEST_DB_NAME}" \
       --default-character-set=utf8mb4 \
       <"/sql/${db_name}_dump.sql"
-      
+
     echo -e "Syncing database: ${DEST_DB_NAME}"
-    echo -e "Dropping temporary database: ${DEST_DB_NAME}_CLONE"
-    mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;"
+
+    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${DEST_DB_NAME}"; then
+      echo -e "Dropping temporary database: ${DEST_DB_NAME}_CLONE"
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "DROP DATABASE ${DEST_DB_NAME}_CLONE;"
+    else
+      echo -e "DONE."
+    fi
 
   done
 
