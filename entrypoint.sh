@@ -82,32 +82,32 @@ while true; do
 
   # Create or clear destination databases and load data
   for db_name in $(echo $DATABASE_NAME | tr ',' ' '); do
-    echo -e "Clearing destination database: ${db_name}"
+    echo -e "Clearing destination database: REPLIKASI_${db_name}"
     # Check if the destination database exists
-    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "${db_name}"; then
-      echo -e "Destination database ${db_name} exists."
+    if database_exists "$DEST_HOST" "$DEST_PORT" "$DEST_USER" "$DEST_PASS" "REPLIKASI_${db_name}"; then
+      echo -e "Destination database REPLIKASI_${db_name} exists."
     else
-      echo -e "Creating destination database ${db_name}."
-      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE ${db_name};"
+      echo -e "Creating destination database REPLIKASI_${db_name}."
+      mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "CREATE DATABASE REPLIKASI_${db_name};"
     fi
 
-    echo -e "Clearing existing data in destination database: ${db_name}"
+    echo -e "Clearing existing data in destination database: REPLIKASI_${db_name}"
     mysqldump \
       --user="${DEST_USER}" \
       --password="${DEST_PASS}" \
       --host="${DEST_HOST}" \
       --port="${DEST_PORT}" \
       --add-drop-table \
-      --no-data "${db_name}" |
+      --no-data "REPLIKASI_${db_name}" |
       grep -e ^DROP -e FOREIGN_KEY_CHECKS |
       mysql \
         --user="${DEST_USER}" \
         --password="${DEST_PASS}" \
         --host="${DEST_HOST}" \
         --port="${DEST_PORT}" \
-        "${db_name}"
+        "REPLIKASI_${db_name}"
 
-    echo -e "Loading export into destination database: ${db_name}"
+    echo -e "Loading export into destination database: REPLIKASI_${db_name}"
     mysql \
       --user="${DEST_USER}" \
       --password="${DEST_PASS}" \
