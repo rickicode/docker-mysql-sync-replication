@@ -1,22 +1,15 @@
 FROM alpine:latest
 
-# Instal paket yang diperlukan untuk MySQL dan lighttpd
-RUN apk add --update mysql-client curl bash musl-dev mariadb-connector-c-dev gcc nano lighttpd && rm -rf /var/cache/apk/*
+# Install required packages
+RUN apk add --update mysql-client curl bash musl-dev mariadb-connector-c-dev gcc nano apache2 && rm -rf /var/cache/apk/*
+RUN mkdir -p /var/www/html/sql
 
-# Buat direktori untuk SQL dan konfigurasi lighttpd
-RUN mkdir -p /var/www/htdocs/sql/
-
-# Salin file konfigurasi lighttpd ke dalam container
-COPY lighttpd.conf /etc/lighttpd/
-
-# Salin script entrypoint
+# Copy entrypoint.sh
 COPY entrypoint.sh /
 
-# Berikan izin eksekusi pada script entrypoint
+# Set execute permission for entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Buka port 8080 untuk lighttpd
+# Expose ports
 EXPOSE 8080
-
-# Tentukan entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
