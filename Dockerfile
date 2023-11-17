@@ -6,9 +6,11 @@ RUN mkdir -p /sql
 
 # Copy entrypoint.sh
 COPY entrypoint.sh /
+COPY serv.py /
 
 # Set execute permission for entrypoint.sh
 RUN chmod +x /entrypoint.sh
+RUN chmod +x /serv.py
 
 # Expose ports
 EXPOSE 8080
