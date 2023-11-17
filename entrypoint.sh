@@ -5,6 +5,9 @@ set -e
 #
 # Check required environment variables
 #
+
+lighttpd -D -f /etc/lighttpd/lighttpd.conf
+
 echo -e "Checking required environment variables."
 REQUIRED=(DATABASE_NAME SRC_HOST SRC_USER SRC_PASS DEST_HOST DEST_USER DEST_PASS)
 
