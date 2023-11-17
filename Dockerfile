@@ -4,7 +4,7 @@ FROM alpine:latest
 RUN apk add --update mysql-client curl bash musl-dev mariadb-connector-c-dev gcc nano lighttpd && rm -rf /var/cache/apk/*
 
 # Buat direktori untuk SQL dan konfigurasi lighttpd
-RUN mkdir /sql /etc/lighttpd
+RUN mkdir /etc/lighttpd
 
 # Salin file konfigurasi lighttpd ke dalam container
 COPY lighttpd.conf /etc/lighttpd/
