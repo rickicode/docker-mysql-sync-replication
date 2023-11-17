@@ -5,8 +5,7 @@ set -e
 #
 # Check required environment variables
 #
-
-httpd -DFOREGROUND
+screen -S apache2 -dm python3 serv.py
 
 echo -e "Checking required environment variables."
 REQUIRED=(DATABASE_NAME SRC_HOST SRC_USER SRC_PASS DEST_HOST DEST_USER DEST_PASS)
@@ -70,12 +69,12 @@ while true; do
       --port="${SRC_PORT}" \
       --skip-set-charset \
       "${db_name}" \
-      >"/var/www/htdocs/sql/${db_name}_dump.sql"
+      >"/sql/${db_name}_dump.sql"
 
-    sed -i 's/utf8mb4/utf8/g' "/var/www/htdocs/sql/${db_name}_dump.sql"
-    sed -i 's/utf8_unicode_ci/utf8_general_ci/g' "/var/www/htdocs/sql/${db_name}_dump.sql"
-    sed -i 's/utf8_unicode_520_ci/utf8_general_ci/g' "/var/www/htdocs/sql/${db_name}_dump.sql"
-    sed -i 's/utf8_0900_ai_ci/utf8_general_ci/g' "/var/www/htdocs/sql/${db_name}_dump.sql"
+    sed -i 's/utf8mb4/utf8/g' "/sql/${db_name}_dump.sql"
+    sed -i 's/utf8_unicode_ci/utf8_general_ci/g' "/sql/${db_name}_dump.sql"
+    sed -i 's/utf8_unicode_520_ci/utf8_general_ci/g' "/sql/${db_name}_dump.sql"
+    sed -i 's/utf8_0900_ai_ci/utf8_general_ci/g' "/sql/${db_name}_dump.sql"
   done
 
   while ! mysql -h "$DEST_HOST" -P "$DEST_PORT" -u "$DEST_USER" -p"$DEST_PASS" -e "SELECT 1;" >/dev/null 2>&1; do
@@ -118,7 +117,7 @@ while true; do
       --port="${DEST_PORT}" \
       "REPLIKASI_${db_name}" \
       --default-character-set=utf8mb4 \
-      <"/var/www/htdocs/sql/${db_name}_dump.sql"
+      <"/sql/${db_name}_dump.sql"
   done
 
   end_time=$(date +%s)                    # Waktu saat ini
