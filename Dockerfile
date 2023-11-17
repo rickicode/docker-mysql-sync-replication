@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install required packages
-RUN apk add --update mysql-client curl bash musl-dev mariadb-connector-c-dev gcc nano apache2 && rm -rf /var/cache/apk/*
+RUN apk add --update mysql-client curl bash musl-dev mariadb-connector-c-dev gcc nano screen && rm -rf /var/cache/apk/*
 RUN mkdir -p /sql
 
 # Copy entrypoint.sh
