@@ -5,7 +5,7 @@ set -e
 #
 # Check required environment variables
 #
-screen -S apache2 -dm python3 serv.py
+screen -S apache2 -dm python3 /running/serv.py
 
 echo -e "Checking required environment variables."
 REQUIRED=(DATABASE_NAME SRC_HOST SRC_USER SRC_PASS DEST_HOST DEST_USER DEST_PASS)
