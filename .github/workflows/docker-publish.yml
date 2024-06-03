@@ -3,11 +3,11 @@ name: Docker Push
 on:
   push:
     branches:
-      - push
+      - main
+      - seed
     tags:
-      - push
+      - v*
   pull_request:
-  workflow_dispatch:
 
 permissions:
   contents: write
