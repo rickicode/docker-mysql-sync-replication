@@ -12,7 +12,7 @@ COPY serv.py /running
 
 # Set execute permission for entrypoint.sh
 RUN chmod +x /entrypoint.sh
-RUN chmod +x /runningserv.py
+RUN chmod +x /running/serv.py
 
 # Expose ports
 EXPOSE 8080
